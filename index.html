@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Infinite Glitter Curveball — No Hand</title>
+
+<style>
+:root {
+    --sparkle-color: #ff00ea;
+}
+
+body {
+    background-color: #050505;
+    margin: 0;
+    overflow: hidden;
+    height: 100vh;
+    font-family: 'Arial Black', sans-serif;
+    perspective: 1500px;
+}
+
+/* Stage */
+#stage {
+    position: absolute;
+    width: 100vw;
+    height: 100vh;
+}
+
+/* Words */
+.flying-word {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform-style: preserve-3d;
+    color: #fff;
+    font-size: 4rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    white-space: nowrap;
+    opacity: 0;
+    text-shadow:
+        0 0 10px var(--sparkle-color),
+        0 0 30px var(--sparkle-color);
+    pointer-events: none;
+    will-change: transform, opacity;
+}
+
+@keyframes central-burst {
+    0% {
+        opacity: 0;
+        transform: translate3d(-50%, -50%, -2500px) scale(0.1);
+    }
+    15% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+        transform:
+            translate3d(calc(-50% + var(--tx)), calc(-50% + var(--ty)), 1500px)
+            rotate(var(--rot))
+            scale(5);
+    }
+}
+
+/* Background stars */
+.bg-sparkle {
+    position: absolute;
+    background: white;
+    border-radius: 50%;
+    box-shadow: 0 0 10px var(--sparkle-color);
+    pointer-events: none;
+    animation: star-field 3s linear infinite;
+}
+
+@keyframes star-field {
+    from { transform: translateZ(-2000px); opacity: 0; }
+    to { transform: translateZ(1000px); opacity: 1; }
+}
+</style>
+</head>
+
+<body>
+
+<div id="stage"></div>
+
+<script>
+const stage = document.getElementById('stage');
+const phrases = ["FUCK", "YOU", "VERY", "MUCH"];
+let phraseIndex = 0;
+
+function spawnWord() {
+    const word = document.createElement('div');
+    word.className = 'flying-word';
+    word.textContent = phrases[phraseIndex];
+
+    const tx = (Math.random() - 0.5) * 2000;
+    const ty = (Math.random() - 0.5) * 1000;
+    const rot = (Math.random() - 0.5) * 180;
+
+    word.style.setProperty('--tx', `${tx}px`);
+    word.style.setProperty('--ty', `${ty}px`);
+    word.style.setProperty('--rot', `${rot}deg`);
+
+    word.style.animation = 'central-burst 2.5s ease forwards';
+
+    stage.appendChild(word);
+
+    setTimeout(() => word.remove(), 2500);
+
+    phraseIndex = (phraseIndex + 1) % phrases.length;
+}
+
+setInterval(spawnWord, 600);
+
+/* Star field */
+function createStar() {
+    const star = document.createElement('div');
+    star.className = 'bg-sparkle';
+
+    const size = Math.random() * 3 + 1;
+    star.style.width = `${size}px`;
+    star.style.height = `${size}px`;
+    star.style.left = `${Math.random() * 100}%`;
+    star.style.top = `${Math.random() * 100}%`;
+
+    document.body.appendChild(star);
+
+    setTimeout(() => star.remove(), 3000);
+}
+
+setInterval(createStar, 50);
+</script>
+
+</body>
+</html>
