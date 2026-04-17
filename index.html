@@ -1,64 +1,40 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Infinite Glitter Curveball — No Hand</title>
+async function removeHandFromImage(base64Image) {
+  const apiKey = ""; // Provided by environment
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent?key=${apiKey}`;
 
-<style>
-:root {
-    --sparkle-color: #ff00ea;
-}
-
-body {
-    background-color: #050505;
-    margin: 0;
-    overflow: hidden;
-    height: 100vh;
-    font-family: 'Arial Black', sans-serif;
-    perspective: 1500px;
-}
-
-/* Stage */
-#stage {
-    position: absolute;
-    width: 100vw;
-    height: 100vh;
-}
-
-/* Words */
-.flying-word {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform-style: preserve-3d;
-    color: #fff;
-    font-size: 4rem;
-    font-weight: 900;
-    text-transform: uppercase;
-    white-space: nowrap;
-    opacity: 0;
-    text-shadow:
-        0 0 10px var(--sparkle-color),
-        0 0 30px var(--sparkle-color);
-    pointer-events: none;
-    will-change: transform, opacity;
-}
-
-@keyframes central-burst {
-    0% {
-        opacity: 0;
-        transform: translate3d(-50%, -50%, -2500px) scale(0.1);
+  const payload = {
+    contents: [{
+      parts: [
+        { text: "Remove the hand from this image and naturally fill in the background or subject area it was covering." },
+        { inlineData: { mimeType: "image/png", data: base64Image } }
+      ]
+    }],
+    generationConfig: {
+      responseModalities: ["TEXT", "IMAGE"]
     }
-    15% {
-        opacity: 1;
+  };
+
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    const result = await response.json();
+    const editPart = result.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
+    
+    if (editPart) {
+      return `data:image/png;base64,${editPart.inlineData.data}`;
     }
-    100% {
-        opacity: 0;
-        transform:
-            translate3d(calc(-50% + var(--tx)), calc(-50% + var(--ty)), 1500px)
-            rotate(var(--rot))
-            scale(5);
+    throw new Error("Failed to generate edited image");
+  } catch (error) {
+    console.error("Edit error:", error);
+    return null;
+  }
+}
+
+
     }
 }
 
