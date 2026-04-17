@@ -3,21 +3,21 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Infinite Word Cannon</title>
+<title>Flyby Word Cannon</title>
 
 <style>
   body {
     margin: 0;
     overflow: hidden;
-    background: #050505;
-    perspective: 1500px;
+    background: radial-gradient(circle at center, #111 0%, #000 100%);
+    perspective: 1200px;
     font-family: Impact, Arial Black, sans-serif;
   }
 
   #stage {
-    position: absolute;
-    width: 100%;
-    height: 100%;
+    width: 100vw;
+    height: 100vh;
+    position: relative;
     transform-style: preserve-3d;
   }
 
@@ -26,27 +26,72 @@
     left: 50%;
     top: 50%;
     transform-style: preserve-3d;
+    transform-origin: center;
     font-size: clamp(2rem, 8vw, 6rem);
     font-weight: 900;
-    color: #ff00ea;
     text-transform: uppercase;
-    pointer-events: none;
+    color: #fff;
     white-space: nowrap;
+    pointer-events: none;
+
     text-shadow:
-      0 0 10px #ff00ea,
+      0 0 8px #ff00ea,
       0 0 20px #ff00ea,
-      0 0 40px #ff00ea,
-      0 0 80px #ff00ea;
+      0 0 40px #a100ff;
+
+    /* No opacity animation at all */
+    animation: fly var(--dur) cubic-bezier(.15,.75,.2,1) forwards;
   }
 
+  @keyframes fly {
+    0% {
+      transform:
+        translate(-50%, -50%)
+        translate3d(0, 0, -2200px)
+        scale(0.08);
+    }
+
+    40% {
+      transform:
+        translate(-50%, -50%)
+        translate3d(var(--curveX), var(--curveY), -600px)
+        scale(0.6);
+    }
+
+    65% {
+      transform:
+        translate(-50%, -50%)
+        translate3d(calc(var(--curveX) + var(--exitX) * 0.15),
+                    calc(var(--curveY) + var(--exitY) * 0.15),
+                    150px)
+        scale(1.2);
+    }
+
+    100% {
+      transform:
+        translate(-50%, -50%)
+        translate3d(var(--exitX), var(--exitY), 2400px)
+        scale(3.5);
+    }
+  }
+
+  /* Starfield stays for depth */
   .star {
     position: absolute;
     width: 2px;
     height: 2px;
     background: white;
-    opacity: 0;
     border-radius: 50%;
-    pointer-events: none;
+    animation: star 1.4s linear forwards;
+  }
+
+  @keyframes star {
+    0% {
+      transform: translateZ(-1800px) scale(0.3);
+    }
+    100% {
+      transform: translateZ(1200px) scale(2);
+    }
   }
 </style>
 </head>
@@ -57,9 +102,59 @@
 <script>
 const stage = document.getElementById("stage");
 
-// Phrase loop
 const words = ["FUCK", "YOU", "VERY", "MUCH"];
-let index = 0;
+let i = 0;
+
+function rand(min, max) {
+  return Math.random() * (max - min) + min;
+}
+
+function spawnWord() {
+  const el = document.createElement("div");
+  el.className = "word";
+  el.innerText = words[i];
+  i = (i + 1) % words.length;
+
+  const side = Math.random() < 0.5 ? -1 : 1;
+
+  const curveX = rand(80, 220) * side;
+  const curveY = rand(-120, 120);
+
+  const exitX = rand(500, 900) * side;
+  const exitY = curveY + rand(-200, 200);
+
+  const dur = rand(1800, 2300) + "ms";
+
+  el.style.setProperty("--curveX", curveX + "px");
+  el.style.setProperty("--curveY", curveY + "px");
+  el.style.setProperty("--exitX", exitX + "px");
+  el.style.setProperty("--exitY", exitY + "px");
+  el.style.setProperty("--dur", dur);
+
+  stage.appendChild(el);
+
+  // Remove AFTER it has flown past the camera
+  setTimeout(() => el.remove(), 2600);
+}
+
+function spawnStar() {
+  const star = document.createElement("div");
+  star.className = "star";
+
+  star.style.left = Math.random() * window.innerWidth + "px";
+  star.style.top = Math.random() * window.innerHeight + "px";
+
+  stage.appendChild(star);
+
+  setTimeout(() => star.remove(), 1400);
+}
+
+setInterval(spawnWord, 600);
+setInterval(spawnStar, 50);
+</script>
+
+</body>
+</html>let index = 0;
 
 // Spawn words every ~600ms
 setInterval(() => {
