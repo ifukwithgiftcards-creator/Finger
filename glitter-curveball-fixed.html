@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Infinite Glitter Curveball - Fixed Hand</title>
+  <style>
+    :root{
+      --bg:#050505;
+      --spark:#ff00ea;
+      --spark2:#ffffff;
+    }
+
+    *{box-sizing:border-box}
+
+    body{
+      margin:0;
+      background: radial-gradient(circle at center, #111 0%, var(--bg) 60%, #000 100%);
+      overflow:hidden;
+      height:100vh;
+      font-family: Arial Black, Impact, system-ui, sans-serif;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      perspective:1400px;
+    }
+
+    #stage{
+      position:fixed;
+      inset:0;
+      overflow:hidden;
+    }
+
+    .bg-sparkle{
+      position:absolute;
+      border-radius:50%;
+      background:white;
+      box-shadow:0 0 10px var(--spark), 0 0 20px var(--spark);
+      pointer-events:none;
+      animation:star-field linear forwards;
+      opacity:0;
+    }
+
+    @keyframes star-field{
+      0%{transform:translateZ(-1800px) scale(.3); opacity:0;}
+      20%{opacity:.8;}
+      100%{transform:translateZ(900px) scale(1.2); opacity:0;}
+    }
+
+    .flying-word{
+      position:absolute;
+      left:50%;
+      top:50%;
+      transform-style:preserve-3d;
+      white-space:nowrap;
+      font-size:clamp(2rem, 5vw, 4.2rem);
+      font-weight:900;
+      letter-spacing:.08em;
+      color:white;
+      text-transform:uppercase;
+      text-shadow:
+        0 0 8px var(--spark),
+        0 0 24px var(--spark),
+        0 0 48px rgba(255,0,234,.45);
+      pointer-events:none;
+      opacity:0;
+      will-change:transform, opacity;
+      animation:central-burst 2.4s cubic-bezier(.25,.1,.25,1) forwards;
+    }
+
+    @keyframes central-burst{
+      0%{
+        opacity:0;
+        transform:translate3d(-50%,-50%,-2200px) rotate(0deg) scale(.08);
+      }
+      12%{opacity:1;}
+      100%{
+        opacity:0;
+        transform:
+          translate3d(calc(-50% + var(--tx)), calc(-50% + var(--ty)), 1400px)
+          rotate(var(--rot))
+          scale(5.2);
+      }
+    }
+
+    .hand-anchor{
+      position:fixed;
+      left:50%;
+      top:50%;
+      width:min(54vmin, 460px);
+      aspect-ratio: 1 / 1.28;
+      transform:translate(-50%, -42%);
+      z-index:50;
+      pointer-events:none;
+      filter:
+        drop-shadow(0 0 10px rgba(255,255,255,.15))
+        drop-shadow(0 0 18px rgba(255,0,234,.3))
+        drop-shadow(0 0 34px rgba(255,0,234,.35));
+    }
+
+    .hand-svg{
+      width:100%;
+      height:100%;
+      display:block;
+    }
+
+    .outline{
+      fill:#0f0f10;
+      stroke:rgba(255,255,255,.15);
+      stroke-width:2.5;
+    }
+
+    .edge-glow{
+      fill:none;
+      stroke:rgba(255,0,234,.55);
+      stroke-width:5;
+      filter:blur(2px);
+    }
+
+    .glitter-mask-shape{
+      fill:white;
+    }
+
+    .glitter-layer{
+      mix-blend-mode:screen;
+      animation: shimmer 2.2s linear infinite;
+    }
+
+    @keyframes shimmer{
+      0%{transform:translate(-40px,-20px) scale(1);}
+      100%{transform:translate(40px,24px) scale(1);}
+    }
+
+    .sheen{
+      opacity:.45;
+      animation: sweep 3s ease-in-out infinite alternate;
+    }
+
+    @keyframes sweep{
+      from{transform:translateX(-25px);}
+      to{transform:translateX(25px);}
+    }
+  </style>
+</head>
+<body>
+  <div id="stage"></div>
+
+  <div class="hand-anchor" aria-hidden="true">
+    <svg class="hand-svg" viewBox="0 0 500 640" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <!-- Real 5-finger silhouette: thumb + index folded + middle up + ring folded + pinky folded -->
+        <path id="handShape" d="
+          M164 614
+          C146 576, 138 538, 138 488
+          L138 346
+          C138 319, 154 301, 176 301
+          C196 301, 211 317, 211 341
+          L211 430
+          L224 430
+          L224 193
+          C224 154, 244 129, 272 129
+          C300 129, 320 154, 320 193
+          L320 430
+          L334 430
+          L334 301
+          C334 278, 349 262, 369 262
+          C389 262, 404 278, 404 301
+          L404 441
+          C404 476, 400 508, 393 544
+          C385 584, 367 613, 343 629
+          C326 640, 304 641, 281 636
+          C251 630, 211 630, 164 614
+          Z
+
+          M166 430
+          L166 204
+          C166 179, 182 162, 203 162
+          C224 162, 239 179, 239 204
+          L239 430
+          Z
+
+          M316 430
+          L316 230
+          C316 206, 331 189, 352 189
+          C373 189, 388 206, 388 230
+          L388 430
+          Z
+
+          M128 466
+          C109 456, 92 444, 80 429
+          C64 409, 64 383, 81 367
+          C96 352, 118 352, 136 367
+          L168 394
+          L168 466
+          Z
+        " />
+
+        <clipPath id="handClip">
+          <use href="#handShape"/>
+        </clipPath>
+
+        <pattern id="glitterA" width="24" height="24" patternUnits="userSpaceOnUse">
+          <rect width="24" height="24" fill="transparent"/>
+          <circle cx="4" cy="6" r="1.6" fill="#fff"/>
+          <circle cx="12" cy="12" r="1.2" fill="#ff8cf6"/>
+          <circle cx="20" cy="7" r="1.4" fill="#fff"/>
+          <circle cx="7" cy="18" r="1.1" fill="#ffd7fb"/>
+          <circle cx="18" cy="19" r="1.7" fill="#fff"/>
+        </pattern>
+
+        <pattern id="glitterB" width="40" height="40" patternUnits="userSpaceOnUse">
+          <rect width="40" height="40" fill="transparent"/>
+          <circle cx="9" cy="10" r="1.5" fill="#fff"/>
+          <circle cx="29" cy="14" r="1.9" fill="#ff4df0"/>
+          <circle cx="22" cy="31" r="1.6" fill="#fff"/>
+          <circle cx="7" cy="29" r="1.1" fill="#ffc4fa"/>
+        </pattern>
+
+        <linearGradient id="sheenGrad" x1="0" x2="1">
+          <stop offset="0%" stop-color="rgba(255,255,255,0)"/>
+          <stop offset="50%" stop-color="rgba(255,255,255,0.35)"/>
+          <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+        </linearGradient>
+      </defs>
+
+      <use href="#handShape" class="edge-glow"/>
+      <use href="#handShape" class="outline"/>
+
+      <g clip-path="url(#handClip)">
+        <g class="glitter-layer">
+          <rect x="60" y="100" width="360" height="560" fill="url(#glitterA)"/>
+          <rect x="40" y="80" width="420" height="600" fill="url(#glitterB)" opacity=".9"/>
+        </g>
+        <g class="sheen">
+          <rect x="110" y="90" width="90" height="560" fill="url(#sheenGrad)" transform="rotate(12 155 370)"/>
+          <rect x="230" y="90" width="70" height="560" fill="url(#sheenGrad)" transform="rotate(12 265 370)"/>
+        </g>
+      </g>
+    </svg>
+  </div>
+
+  <script>
+    const stage = document.getElementById('stage');
+    const phrases = ["FUCK", "YOU", "VERY", "MUCH"];
+    let phraseIndex = 0;
+
+    function spawnWord() {
+      const word = document.createElement('div');
+      word.className = 'flying-word';
+      word.textContent = phrases[phraseIndex];
+
+      const tx = (Math.random() - 0.5) * 2200 + 'px';
+      const ty = (Math.random() - 0.5) * 1200 + 'px';
+      const rot = ((Math.random() - 0.5) * 200) + 'deg';
+
+      word.style.setProperty('--tx', tx);
+      word.style.setProperty('--ty', ty);
+      word.style.setProperty('--rot', rot);
+
+      stage.appendChild(word);
+      setTimeout(() => word.remove(), 2400);
+      phraseIndex = (phraseIndex + 1) % phrases.length;
+    }
+
+    setInterval(spawnWord, 600);
+
+    function createStar() {
+      const star = document.createElement('div');
+      star.className = 'bg-sparkle';
+      const size = Math.random() * 3 + 1;
+      const duration = Math.random() * 2 + 2.2;
+
+      star.style.width = size + 'px';
+      star.style.height = size + 'px';
+      star.style.left = Math.random() * 100 + '%';
+      star.style.top = Math.random() * 100 + '%';
+      star.style.animationDuration = duration + 's';
+
+      document.body.appendChild(star);
+      setTimeout(() => star.remove(), duration * 1000);
+    }
+
+    setInterval(createStar, 60);
+  </script>
+</body>
+</html>
