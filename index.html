@@ -1,65 +1,150 @@
-async function removeHandFromImage(base64Image) {
-  const apiKey = ""; // Provided by environment
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent?key=${apiKey}`;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Infinite Word Cannon</title>
 
-  const payload = {
-    contents: [{
-      parts: [
-        { text: "Remove the hand from this image and naturally fill in the background or subject area it was covering." },
-        { inlineData: { mimeType: "image/png", data: base64Image } }
-      ]
-    }],
-    generationConfig: {
-      responseModalities: ["TEXT", "IMAGE"]
-    }
-  };
-
-  try {
-    const response = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
-
-    const result = await response.json();
-    const editPart = result.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
-    
-    if (editPart) {
-      return `data:image/png;base64,${editPart.inlineData.data}`;
-    }
-    throw new Error("Failed to generate edited image");
-  } catch (error) {
-    console.error("Edit error:", error);
-    return null;
+<style>
+  body {
+    margin: 0;
+    overflow: hidden;
+    background: #050505;
+    perspective: 1500px;
+    font-family: Impact, Arial Black, sans-serif;
   }
-}
 
-
-    }
-}
-
-/* Background stars */
-.bg-sparkle {
+  #stage {
     position: absolute;
-    background: white;
-    border-radius: 50%;
-    box-shadow: 0 0 10px var(--sparkle-color);
-    pointer-events: none;
-    animation: star-field 3s linear infinite;
-}
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+  }
 
-@keyframes star-field {
-    from { transform: translateZ(-2000px); opacity: 0; }
-    to { transform: translateZ(1000px); opacity: 1; }
-}
+  .word {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform-style: preserve-3d;
+    font-size: clamp(2rem, 8vw, 6rem);
+    font-weight: 900;
+    color: #ff00ea;
+    text-transform: uppercase;
+    pointer-events: none;
+    white-space: nowrap;
+    text-shadow:
+      0 0 10px #ff00ea,
+      0 0 20px #ff00ea,
+      0 0 40px #ff00ea,
+      0 0 80px #ff00ea;
+  }
+
+  .star {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: white;
+    opacity: 0;
+    border-radius: 50%;
+    pointer-events: none;
+  }
 </style>
 </head>
 
 <body>
-
 <div id="stage"></div>
 
 <script>
+const stage = document.getElementById("stage");
+
+// Phrase loop
+const words = ["FUCK", "YOU", "VERY", "MUCH"];
+let index = 0;
+
+// Spawn words every ~600ms
+setInterval(() => {
+  spawnWord(words[index]);
+  index = (index + 1) % words.length;
+}, 600);
+
+function spawnWord(text) {
+  const el = document.createElement("div");
+  el.className = "word";
+  el.innerText = text;
+
+  // Random trajectory
+  const tx = (Math.random() - 0.5) * 2000;
+  const ty = (Math.random() - 0.5) * 1200;
+  const rot = (Math.random() - 0.5) * 720;
+
+  stage.appendChild(el);
+
+  // Start far away
+  el.style.transform = `
+    translate(-50%, -50%)
+    translate3d(0, 0, -2500px)
+    scale(0.2)
+    rotate(0deg)
+  `;
+
+  // Force layout
+  el.offsetHeight;
+
+  // Animate forward
+  el.style.transition = "transform 2.2s cubic-bezier(0.1, 0.8, 0.2, 1), opacity 2.2s";
+  el.style.transform = `
+    translate(-50%, -50%)
+    translate3d(${tx}px, ${ty}px, 1500px)
+    scale(3)
+    rotate(${rot}deg)
+  `;
+  el.style.opacity = 0;
+
+  // Cleanup
+  setTimeout(() => {
+    el.remove();
+  }, 2200);
+}
+
+// Starfield loop (~50ms)
+setInterval(() => {
+  spawnStar();
+}, 50);
+
+function spawnStar() {
+  const star = document.createElement("div");
+  star.className = "star";
+
+  const x = Math.random() * window.innerWidth;
+  const y = Math.random() * window.innerHeight;
+
+  stage.appendChild(star);
+
+  star.style.left = x + "px";
+  star.style.top = y + "px";
+
+  // Start deep
+  star.style.transform = `translateZ(-2000px) scale(0.5)`;
+
+  star.offsetHeight;
+
+  // Animate forward
+  star.style.transition = "transform 1.5s linear, opacity 1.5s";
+  star.style.opacity = 1;
+  star.style.transform = `translateZ(1000px) scale(2)`;
+
+  setTimeout(() => {
+    star.style.opacity = 0;
+  }, 1200);
+
+  setTimeout(() => {
+    star.remove();
+  }, 1500);
+}
+</script>
+
+</body>
+</html><script>
 const stage = document.getElementById('stage');
 const phrases = ["FUCK", "YOU", "VERY", "MUCH"];
 let phraseIndex = 0;
